@@ -1,0 +1,597 @@
+---
+title: "Infrastructure Investment & Jobs Act Funding Allocation"
+author: "Pricilla"
+date: "2026-02-01"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(maps)
+library(knitr)
+library(kableExtra)
+library(ggrepel)
+```
+
+
+
+
+
+```{r}
+# 1. Define the URL for the RAW CSV file
+url <- "https://raw.githubusercontent.com/prnakyazze94/Data-608/refs/heads/main/IIJA%20FUNDING%20AS%20OF%20MARCH%202023."
+
+# 2. Read the data directly into R
+Funding_data <- read.csv(url, check.names = FALSE)
+
+# 3. View the first few rows
+#head(Funding_data)
+```
+
+```{r}
+# 1. Define the URL POPULATION
+url2 <- "https://raw.githubusercontent.com/prnakyazze94/Data-608/refs/heads/main/Population%20by%20state.csv"
+
+# 2. Read the CSV into the variable 'Popn_by_state'
+Popn_by_state <- read.csv(url2, check.names = FALSE)
+
+# 3. View the first few rows to confirm it loaded
+#head(Popn_by_state)
+```
+
+The Infrastructure Investment & Jobs Act (IIJA) represents a historic injection of capital into the American backbone. By combining federal funding allocation data with 2020 Census population figures , we can uncover not just where the money is going, but who it is actually serving.
+
+```{r}
+
+# --- Step 1: Reshape the Population Data ---
+Popn_Long <- Popn_by_state %>%
+  select(-State) %>% 
+  pivot_longer(
+    cols = everything(), 
+    names_to = "State_Name", 
+    values_to = "Total_Population"
+  ) %>%
+  mutate(
+    State_Upper = str_to_upper(State_Name),
+    Total_Population = as.numeric(gsub(",", "", Total_Population))
+  )
+
+# --- Step 2: Prepare the Funding Data ---
+Funding_Ready <- Funding_data %>%
+  mutate(
+    State_Upper = str_to_upper(`State Teritory or Tribal Nation`),
+    
+    # Fix typos in the JOIN KEY (so the data matches)
+    State_Upper = case_when(
+      State_Upper == "DELEWARE" ~ "DELAWARE", 
+      State_Upper == "MISSISIPPI" ~ "MISSISSIPPI",
+      TRUE ~ State_Upper
+    )
+  )
+
+# --- Step 3: Join and Fix the Display Name ---
+Final_Data <- left_join(Funding_Ready, Popn_Long, by = "State_Upper") %>%
+  select(
+    "State Teritory or Tribal Nation", 
+    "Amount in Billions", 
+    `Total Population` = Total_Population
+  )
+
+# *** FIX THE DISPLAY NAME HERE ***
+# This overwrites "DELEWARE" with "DELAWARE" in the final list
+Final_Data$"State Teritory or Tribal Nation"[Final_Data$"State Teritory or Tribal Nation" == "DELEWARE"] <- "DELAWARE"
+
+# --- Step 4: Check the Result ---
+#print(Final_Data)
+```
+
+```{r}
+
+
+# 1. Get the standard USA map data
+us_map <- map_data("state")
+
+# 2. Prepare your data for joining
+Data_For_Map <- Final_Data %>%
+  mutate(region = tolower(`State Teritory or Tribal Nation`)) %>%
+  select(region, `Total Population`)
+
+# 3. Join the coordinate data with your population data
+Map_Plot_Data <- left_join(us_map, Data_For_Map, by = "region")
+
+#  CREATE STATE CENTERS FOR LABELS ---
+# This aggregates the map coordinates to find the center (mean) of each state
+State_Centers <- Map_Plot_Data %>%
+  group_by(region) %>%
+  summarize(long = mean(long), lat = mean(lat)) %>%
+  # Add state abbreviations (built-in R datasets state.name and state.abb)
+  mutate(State_Abbrev = state.abb[match(region, tolower(state.name))])
+
+# 4. Create the Map Plot
+ggplot() +
+  
+  # Layer 1: The Map Polygons
+  geom_polygon(data = Map_Plot_Data, 
+               aes(x = long, y = lat, group = group, fill = `Total Population`),
+               color = "white", size = 0.2) +
+  
+  # Layer 2: The State Initials
+  geom_text(data = State_Centers, 
+            aes(x = long, y = lat, label = State_Abbrev),
+            color = "black", size = 3, fontface = "bold", check_overlap = TRUE) +
+  
+  # Color Scale
+  scale_fill_gradient(low = "#deebf7",    
+                      high = "#1f77b4",   
+                      labels = scales::comma,
+                      name = "Population") +
+  
+  # Fix aspect ratio & clean theme
+  coord_map() +
+  labs(title = "US Population by State",
+       subtitle = "Darker blue indicates higher population") +
+  theme_void() +
+  theme(legend.position = "right")
+```
+
+
+```{r}
+#which states got the least and most funding.
+#    We use 'order' on the second column (the billions column)
+sorted_data_high <- Final_Data[order(Final_Data[[2]], decreasing = TRUE), ]
+
+# 2. Sort the data by amount (Low to High)
+sorted_data_low <- Final_Data[order(Final_Data[[2]], decreasing = FALSE), ]
+
+# 3. Extract the top 10 and bottom 10
+top_10_highest <- head(sorted_data_high, 10)
+top_10_lowest  <- head(sorted_data_low, 10)
+
+# 4. View the results
+
+#print(top_10_highest)
+```
+
+```{r}
+
+#Which 10 states have the highest population?
+# Rename columns ( State, Billions, Population)
+colnames(top_10_highest) <- c("State", "Billions", "Population")
+
+# Plot
+#    x = reorder(State, -Population) sorts the bars so they aren't random
+ggplot(top_10_highest, aes(x = reorder(State, Population), y = Population)) +
+  
+  # The Bars
+  geom_bar(stat = "identity", fill = "#1f77b4") +
+  
+  # The Population Text Labels (Inside the bar, White)
+  geom_text(aes(label = format(Population, big.mark = ",", scientific = FALSE)),
+            hjust = 1.1,      # 1.1 places text INSIDE the bar
+            color = "white",  # White text
+            fontface = "bold",
+            size = 3.5) +
+  
+  # Flip axes for horizontal bars
+  coord_flip() +
+  
+  # Labels
+  labs(title = "10 States with the highest Populations",
+      # subtitle = "White numbers indicate Total Population",
+       x = NULL,
+       y = NULL) +  # Removed Y label since numbers are hidden
+  
+  # Clean Theme + Remove Axis Numbers
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),  # Removes the numbers on the bottom (X-axis visually)
+    axis.ticks.x = element_blank(), # Removes the ticks on the bottom
+    panel.grid = element_blank()    # Removes the grid lines for a cleaner look
+  )
+```
+
+
+```{r}
+
+# Rename columns (data has 3 columns: State, Billions, Population)
+colnames(top_10_lowest) <- c("State", "Billions", "Population")
+
+# Plot
+#    x = reorder(State, -Population) sorts the bars so they aren't random
+ggplot(top_10_lowest, aes(x = reorder(State, -Population), y = Population)) +
+  
+  # The Red Bars
+  geom_bar(stat = "identity", fill = "#d62728") +
+  
+  # The Population Text Labels (Inside the bar, White)
+  geom_text(aes(label = format(Population, big.mark = ",", scientific = FALSE)),
+            hjust = 1.1,      # 1.1 places text INSIDE the bar
+            color = "white",  # White text
+            fontface = "bold",
+            size = 3.5) +
+  
+  # Flip axes for horizontal bars
+  coord_flip() +
+  
+  # Labels
+  labs(title = "10 States with the Lowest Populations",
+      # subtitle = "White numbers indicate Total Population",
+       x = NULL,
+       y = NULL) +  # Removed Y label since numbers are hidden
+  
+  # Clean Theme + Remove Axis Numbers
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),  # Removes the numbers on the bottom (X-axis visually)
+    axis.ticks.x = element_blank(), # Removes the ticks on the bottom
+    panel.grid = element_blank()    # Removes the grid lines for a cleaner look
+  )
+```
+```{r}
+
+# Which 10 states received the most funding? 
+# Top 10 list based on POPULATION
+top_10_pop <- Final_Data %>%
+  arrange(desc(`Total Population`)) %>%
+  head(10)
+
+# Rename columns
+colnames(top_10_pop) <- c("State", "Billions", "Population")
+
+# 3. Plot with Light Blue bars
+ggplot(top_10_pop, aes(x = reorder(State, Billions), y = Billions)) +
+  
+  # -
+  geom_bar(stat = "identity", fill = "#56B4E9") + 
+  # --------------------------------------------------------
+  
+  geom_text(aes(label = paste0("$", Billions, " B")),
+            hjust = 1.1,
+            color = "white", 
+            fontface = "bold", 
+            size = 3.5) +
+  
+  coord_flip() +
+  
+  labs(title = "10 States that received the most funding",
+       #subtitle = "White numbers indicate IIJA Funding (in Billions)",
+       x = NULL,
+       y = "Total Population") +
+  
+  scale_y_continuous(labels = scales::comma) +
+  
+  theme_minimal()+
+  theme(
+    axis.text.x = element_blank(),  # Removes the numbers on the bottom (X-axis visually)
+    axis.ticks.x = element_blank(), # Removes the ticks on the bottom
+    panel.grid = element_blank()    # Removes the grid lines for a cleaner look
+  )
+```
+
+
+```{r}
+
+# Sort Final_Data by 'Amount in Billions' (Ascending) to find the lowest
+lowest_funded <- Final_Data %>%
+  arrange(`Amount in Billions`) %>%
+  head(10)
+
+# Rename columns to match what the plot code expects
+colnames(lowest_funded) <- c("State", "Billions", "Population")
+
+# Prepare the data (ensure Billions is numeric)
+#    We create new columns to control Position (hjust) and Color based on bar size.
+plot_data <- lowest_funded %>%
+  mutate(
+    # Threshold: If funding is less than $0.3 Billion, put text OUTSIDE (-0.1)
+    # Otherwise, put it INSIDE (1.1)
+    Hjust_Val = ifelse(Billions < 0.3, -0.1, 1.1),
+    
+    # If text is OUTSIDE, make it Black. If INSIDE, make it White.
+    Color_Val = ifelse(Billions < 0.3, "black", "white")
+  )
+
+# 2. Plot
+ggplot(plot_data, aes(x = reorder(State, -Billions), y = Billions)) +
+  
+  # The Bars
+  geom_bar(stat = "identity", fill = "#ff7f7f") +
+  
+  # The Labels (Using the dynamic Hjust and Color columns)
+  geom_text(aes(label = paste0("$", Billions, "B"),
+                hjust = Hjust_Val, 
+                color = Color_Val), 
+            fontface = "bold", 
+            size = 3.5) +
+  
+  # This tells ggplot to use the actual strings "black" and "white" as colors
+  scale_color_identity() +
+  
+  # Flip axes
+  coord_flip() +
+  
+  # Labels
+  labs(title = "10 States that received the least funding",
+       x = NULL,
+       y = " ") +
+  
+  # Clean Theme
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank()
+  )
+```
+
+
+
+
+
+FUNDS VS POPULATION FOR HIGHEST FUNDED STATES
+
+```{r}
+
+# 1. Filter and Reshape Top 20 Data
+plot_data <- Final_Data %>%
+  arrange(desc(`Amount in Billions`)) %>%
+  head(20) %>%
+  select(`State Teritory or Tribal Nation`, `Amount in Billions`, `Total Population`) %>%
+  pivot_longer(
+    cols = c(`Amount in Billions`, `Total Population`),
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  # --- LOGIC TO PUT CALIFORNIA INSIDE ---
+  mutate(
+    # If State is California, hjust = 1.1 (Inside). Others = -0.1 (Outside)
+    Hjust_Val = ifelse(`State Teritory or Tribal Nation` == "CALIFORNIA", 1.1, -0.1),
+    
+    # If State is California, Color = White. Others = Black
+    Color_Val = ifelse(`State Teritory or Tribal Nation` == "CALIFORNIA", "white", "black")
+  )
+
+# 2. Create the Plot
+ggplot(plot_data, aes(x = reorder(`State Teritory or Tribal Nation`, Value), 
+                      y = Value, 
+                      fill = Metric)) +
+  
+  # Bars
+  geom_bar(stat = "identity", width = 0.7, show.legend = FALSE) +
+  
+  # Facet: Split panels
+  facet_wrap(~Metric, scales = "free_x") +
+  
+  # Horizontal Bars
+  coord_flip() +
+  
+  # Add Labels using the dynamic Hjust and Color columns
+  geom_text(aes(label = ifelse(Metric == "Amount in Billions", 
+                               paste0("$", round(Value, 2), "B"), 
+                               format(round(Value), big.mark = ",", scientific = FALSE)),
+                hjust = Hjust_Val, 
+                color = Color_Val), 
+            size = 3.5) +
+  
+  # Use the actual color names ("white", "black") from our data
+  scale_color_identity() +
+  
+  # Bar Colors
+  scale_fill_manual(values = c("Amount in Billions" = "#2ca02c", 
+                               "Total Population" = "#1f77b4")) +
+  
+  # Titles
+  labs(title = "20 highest funded States: Funding vs. Population",
+       
+       x = NULL,
+       y = NULL) +
+  
+  # Theme
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 10, r = 20, b = 10, l = 10)
+  )
+```
+
+
+
+
+
+```{r}
+
+
+
+# Format the 'Top 10 Highest' table
+kable(top_10_highest, 
+      col.names = c("State", "Funding (Billions)", "Population"), 
+      digits = 2, 
+      format.args = list(big.mark = ","), 
+      caption = "Table 1: 10 Highest Funded States") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = FALSE, 
+                position = "left")
+```
+
+
+
+Looking at funding by funds vs population for states receiving the most funding.
+
+America’s highly populated states receive the largest funding. California, the nation's most populated state with 39.5 million people, secured the most funding of 18.4 billion dollars in funding . It is followed closely by Texas's 14.4 billion dollars and New York at 10.1 billion dollars .
+
+This aligns with the logic of scale, massive populations require massive infrastructure. Also these bigger populations are paying more taxes. However, the correlation isn't perfect. Florida, despite being the third most populous state with 21.5 million residents , ranks fifth in funding at 8.2 billion dollars, receiving less than Illinois's 8.4 billion dollars which has nearly 9 million fewer people . This suggests that funding formulas prioritize factors beyond raw headcount or tax contributions but legacy infrastructure needs or highway lane miles.
+
+
+
+
+
+FUNDS VS POPULATION FOR LEAST FUNDED STATES.
+
+Which States got allocated the least funds.
+
+```{r}
+
+# Filter for the 20 LOWEST Funded (Sorted Ascending)
+lowest_20_data <- Final_Data %>%
+  arrange(`Amount in Billions`) %>% 
+  head(20)
+
+# Reshape Data
+plot_data_low <- lowest_20_data %>%
+  select(`State Teritory or Tribal Nation`, `Amount in Billions`, `Total Population`) %>%
+  pivot_longer(
+    cols = c(`Amount in Billions`, `Total Population`),
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  # Since these bars are small, we default to placing text OUTSIDE (-0.1) in BLACK
+  mutate(
+    Hjust_Val = -0.1,
+    Color_Val = "black"
+  )
+
+# Plot
+ggplot(plot_data_low, aes(x = reorder(`State Teritory or Tribal Nation`, -Value), # Sorts bars correctly
+                          y = Value, 
+                          fill = Metric)) +
+  
+  # Bars
+  geom_bar(stat = "identity", width = 0.7, show.legend = FALSE) +
+  
+  # Facet: Split panels
+  facet_wrap(~Metric, scales = "free_x") +
+  
+  # Horizontal Bars
+  coord_flip() +
+  
+  # Add Labels
+  geom_text(aes(label = ifelse(Metric == "Amount in Billions", 
+                               paste0("$", round(Value, 3), "B"), # 3 decimals for tiny amounts
+                               format(round(Value), big.mark = ",", scientific = FALSE)),
+                hjust = Hjust_Val, 
+                color = Color_Val), 
+            size = 3.5) +
+  
+  # Use actual color names (black) for text
+  scale_color_identity() +
+  
+  # --- CHANGED: LIGHT GREEN and LIGHT BLUE ---
+  scale_fill_manual(values = c("Amount in Billions" = "#98df8a", 
+                               "Total Population" = "#aec7e8")) +
+  
+  # Add extra space on the right so outside labels don't get cut off
+  scale_y_continuous(expand = expansion(mult = c(0, 0.4))) +
+  
+  # Titles
+  labs(title = "20 Lowest Funded States: Funding vs. Population",
+       x = NULL,
+       y = NULL) +
+  
+  # Clean Theme
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 10, r = 20, b = 10, l = 10)
+  )
+```
+
+
+```{r}
+# Which state got allocated the least funds.
+# Format the 'Lowest Funded' table
+kable(top_10_lowest, 
+      col.names = c("State", "Funding (Billions)", "Population"), 
+      digits = 4,   # Higher precision for small numbers like 0.0686
+      format.args = list(big.mark = ","), 
+      caption = "Table 2: 10 Lowest Funded States") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = FALSE, 
+                position = "left")
+```
+
+
+
+
+
+
+
+
+
+Small States, Heavy Wallets
+
+
+While they appear at the bottom of the total funding list, America's smallest states are well funded according to ratios.
+
+Wyoming, the least populated state in the nation approximately 577,000 residents, received 1.6 billion dollars . To put that in perspective, while California has roughly 68 times the population of Wyoming, it only received about 11 times the funding. This indicates a significant small state advantage in per capita investment, likely driven by the high fixed costs of maintaining roads and bridges across vast, sparsely populated rural areas. Similarly, Vermont and Alaska secured 1 billion dollars and 3.7 billion dollars respectively, ensuring their smaller populations are not left behind.
+
+
+
+
+
+
+The Funding Floor
+At the very bottom of the allocation chart are the U.S. territories, which face a vastly different reality. American Samoa received the lowest allocation at roughly 68.6 million or $0.0686 billion dollars , followed closely by the Northern Mariana Islands 83.3 million dollars .
+
+While their populations are small, the gap between the lowest funded states and these territories is stark. For instance, Delaware the lowest funded state at 792 million dollars still received nearly 11 times more funding than American Samoa.
+
+
+
+
+```{r}
+
+# Create the plot using your full dataset (Final_Data)
+ggplot(Final_Data, aes(x = `Total Population`, y = `Amount in Billions`)) +
+  
+  # The Dots
+  geom_point(color = "#1f77b4", size = 3, alpha = 0.7) +
+  
+  # The Trend Line (Linear Model)
+  # This shows where funding "should" be if it matched population perfectly
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  
+  # Add Labels for interesting outliers (Top 5 populated + Top 5 funded + Wyoming)
+  geom_text_repel(aes(label = `State Teritory or Tribal Nation`), 
+                  max.overlaps = 10) +
+  
+  # Labels
+  labs(title = "Funding vs. Population",
+       subtitle = "States above the red line get more funding than their population suggests",
+       x = "Total Population",
+       y = "Funding (Billions)") +
+  
+  # Format Axis Numbers with Commas
+  scale_x_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::dollar_format(suffix = "B")) +
+  
+  # Clean Theme
+  theme_minimal()
+```
+
+
+
+States above the red line get more funding than their population suggests while those below get less compared to population.
+
+
+
+The Verdict
+
+
+The data tells a story of two Americas. For the densely populated states like California and Texas, the IIJA is a massive dollar value investment scaling with their big populations. But for rural states like Wyoming and Alaska, it represents a strategic, high value investment that acknowledges the high cost of connecting remote citizens.The distribution of funds under the IIJA does not correlate strictly with population magnitude. Instead, the data suggests a needs based allocation model, prioritizing states with significant infrastructure deficiencies such as highway networks or aging bridges over simple per capita metrics.
+
+
+Resources
+U.S. Census Bureau Website Census.gov  #https://data.census.gov/table/DECENNIALCD1182020.P1?q=populations+by+state
+
