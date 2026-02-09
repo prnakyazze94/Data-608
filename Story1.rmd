@@ -1,0 +1,632 @@
+---
+title: "Infrastructure Investment & Jobs Act Funding Allocation 2"
+author: "Pricilla"
+date: "2026-02-06"
+output: pdf_document
+---
+
+---
+title: "Infrastructure Investment & Jobs Act Funding Allocation"
+author: "Pricilla"
+date: "2026-02-01"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(maps)
+library(knitr)
+library(kableExtra)
+library(ggrepel)
+library(ggplot2)
+library(dplyr)
+library(maps)
+```
+
+
+
+```{r}
+# 1. Define the URL for the RAW CSV file
+url <- "https://raw.githubusercontent.com/prnakyazze94/Data-608/refs/heads/main/IIJA%20FUNDING%20AS%20OF%20MARCH%202023."
+
+# 2. Read the data directly into R
+Funding_data <- read.csv(url, check.names = FALSE)
+
+# 3. View the first few rows
+#head(Funding_data)
+```
+
+```{r}
+# 1. Define the URL POPULATION
+url2 <- "https://raw.githubusercontent.com/prnakyazze94/Data-608/refs/heads/main/Population%20by%20state.csv"
+
+# 2. Read the CSV into the variable 'Popn_by_state'
+Popn_by_state <- read.csv(url2, check.names = FALSE)
+
+# 3. View the first few rows to confirm it loaded
+#head(Popn_by_state)
+```
+
+
+```{r}
+# 1. Define the URL
+url <- "https://raw.githubusercontent.com/prnakyazze94/Data-608/refs/heads/main/2020%20election%20results"
+
+# 2. Read the data
+#    check.names = FALSE keeps column names like "Popular Vote" with spaces intact if they exist
+election_data <- read.csv(url, check.names = FALSE)
+
+# 3. View the first few rows to verify
+#head(election_data)
+```
+
+
+The Infrastructure Investment & Jobs Act (IIJA) represents a historic injection of capital into the American backbone. By combining federal funding allocation data with 2020 Census population figures , we can uncover not just where the money is going, but who it is actually serving.
+
+
+```{r}
+
+# --- Step 1: Reshape the Population Data ---
+Popn_Long <- Popn_by_state %>%
+  select(-State) %>% 
+  pivot_longer(
+    cols = everything(), 
+    names_to = "State_Name", 
+    values_to = "Total_Population"
+  ) %>%
+  mutate(
+    State_Upper = str_to_upper(State_Name),
+    Total_Population = as.numeric(gsub(",", "", Total_Population))
+  )
+
+# --- Step 2: Prepare the Funding Data ---
+Funding_Ready <- Funding_data %>%
+  mutate(
+    State_Upper = str_to_upper(`State Teritory or Tribal Nation`),
+    
+    # Fix typos in the JOIN KEY (so the data matches)
+    State_Upper = case_when(
+      State_Upper == "DELEWARE" ~ "DELAWARE", 
+      State_Upper == "MISSISIPPI" ~ "MISSISSIPPI",
+      TRUE ~ State_Upper
+    )
+  )
+
+# --- Step 3: Join and Fix the Display Name ---
+Final_Data <- left_join(Funding_Ready, Popn_Long, by = "State_Upper") %>%
+  select(
+    "State Teritory or Tribal Nation", 
+    "Amount in Billions", 
+    `Total Population` = Total_Population
+  )
+
+# *** FIX THE DISPLAY NAME HERE ***
+# This overwrites "DELEWARE" with "DELAWARE" in the final list
+Final_Data$"State Teritory or Tribal Nation"[Final_Data$"State Teritory or Tribal Nation" == "DELEWARE"] <- "DELAWARE"
+
+# --- Step 4: Check the Result ---
+#print(Final_Data)
+```
+
+
+
+```{r}
+
+
+# 1. Prepare Election Data
+#    Create Full Names from Abbreviations (e.g., "AL" -> "ALABAMA")
+election_prep <- election_data %>%
+  mutate(
+    Full_State_Name = state.name[match(State, state.abb)],
+    Full_State_Name = ifelse(State == "DC", "District of Columbia", Full_State_Name),
+    Full_State_Name = toupper(Full_State_Name)
+  )
+
+# 2. Prepare Final_Data
+Final_Data_prep <- Final_Data %>%
+  mutate(`State Teritory or Tribal Nation` = toupper(`State Teritory or Tribal Nation`))
+
+# 3. Join and Create 'Winning_Party'
+Elec_funding_data <- Final_Data_prep %>%
+  inner_join(election_prep, by = c("State Teritory or Tribal Nation" = "Full_State_Name")) %>%
+  mutate(
+    Winning_Party = case_when(
+      Electoral_Votes_Biden > Electoral_Votes_Trump ~ "Democrat",
+      Electoral_Votes_Trump > Electoral_Votes_Biden ~ "Republican",
+      TRUE ~ "Split"
+    )
+  ) %>%
+  # --- FIX IS HERE ---
+  # We select 'State' (the abbreviation column from election_data) directly
+  select(
+    State_Name = `State Teritory or Tribal Nation`, 
+    `Amount in Billions`, 
+    `Total Population`, 
+    Abbreviation = State,  # Changed from State.y to State
+    Electoral_Votes_Biden, 
+    Electoral_Votes_Trump, 
+    Winning_Party
+  )
+
+# 4. Check the result
+#head(Elec_funding_data)
+```
+
+
+```{r}
+#which states got the least and most funding.
+#    We use 'order' on the second column (the billions column)
+sorted_data_high <- Final_Data[order(Final_Data[[2]], decreasing = TRUE), ]
+
+# 2. Sort the data by amount (Low to High)
+sorted_data_low <- Final_Data[order(Final_Data[[2]], decreasing = FALSE), ]
+
+# 3. Extract the top 10 and bottom 10
+top_10_highest <- head(sorted_data_high, 10)
+top_10_lowest  <- head(sorted_data_low, 20)
+
+# 4. View the results
+
+#print(top_10_highest)
+```
+
+**2020 Election Winner by Population Density.**
+
+
+The 2020 Election Winner by Population Density shows that California and New York have the highest population for Democratic states, and Florida and Texas are the Republican states with the highest population.
+
+```{r}
+
+
+# 1. Get the standard USA map data
+us_map <- map_data("state")
+
+# 2. Prepare Data from 'Elec_funding_data'
+map_data_prep <- Elec_funding_data %>%
+  mutate(region = tolower(State_Name)) %>%
+  select(region, `Total Population`, Winning_Party, Abbreviation)
+
+# 3. Join with Coordinate Data
+full_map_data <- left_join(us_map, map_data_prep, by = "region")
+
+# 4. Create Centers for Labels (to put state initials in the middle)
+state_centers <- full_map_data %>%
+  group_by(region) %>%
+  summarize(long = mean(long), 
+            lat = mean(lat), 
+            Abbrev = first(Abbreviation))
+
+# 5. Create the Map Plot
+ggplot() +
+  
+  # Map Polygons
+  geom_polygon(data = full_map_data,
+               aes(x = long, 
+                   y = lat, 
+                   group = group, 
+                   fill = Winning_Party,       
+                   alpha = `Total Population`), 
+               color = "white", size = 0.2) +
+  
+  # Party Colors
+  scale_fill_manual(values = c("Democrat" = "#08519c",   
+                               "Republican" = "#a50f15", 
+                               "Split" = "gray")) +
+  
+  # Shading (Legend REMOVED here)
+  scale_alpha_continuous(range = c(0.4, 1), 
+                         guide = "none") +  # <--- This hides the Population legend
+  
+  # State Initials
+  geom_text(data = state_centers, 
+            aes(x = long, y = lat, label = Abbrev),
+            color = "black", size = 3, fontface = "bold", check_overlap = TRUE) +
+  
+  # Labels and Theme
+  coord_map() +
+  labs(title = "2020 Election Winner by Population Density",
+       subtitle = "Darker shades indicate higher population",
+       fill = "Winner") +
+  
+  theme_void() +
+  theme(legend.position = "right")
+```
+
+  
+  
+  
+Looking at funding by funds vs population for states receiving the most funding.
+
+America’s highly populated states receive the largest funding. California, the nation's most populated state with 39.5 million people, secured the most funding of 18.4 billion dollars in funding . It is followed closely by Texas's 14.4 billion dollars and New York at 10.1 billion dollars .
+
+This aligns with the logic of scale, massive populations require massive infrastructure. Also these bigger populations are paying more taxes. However, the correlation isn't perfect. Florida, despite being the third most populous state with 21.5 million residents , ranks fifth in funding at 8.2 billion dollars, receiving less than Illinois's 8.4 billion dollars which has nearly 9 million fewer people . This suggests that funding formulas prioritize factors beyond raw headcount or tax contributions but legacy infrastructure needs or highway lane miles.
+
+**With High Populations, the Largest States Dominate Funding.**
+
+When analyzing gross funding rather than per capita metrics, the states with the highest populations like California, New York, Texas and Florida dominate the distribution by receiving the largest total amounts of money in Funding. 
+
+
+
+```{r}
+
+# 1. Prepare Election Data (if not already done)
+election_prep <- election_data %>%
+  mutate(
+    Full_State_Name = toupper(state.name[match(State, state.abb)]),
+    Full_State_Name = ifelse(State == "DC", "DISTRICT OF COLUMBIA", Full_State_Name),
+    Winning_Party = case_when(
+      Electoral_Votes_Biden > Electoral_Votes_Trump ~ "Democrat",
+      Electoral_Votes_Trump > Electoral_Votes_Biden ~ "Republican",
+      TRUE ~ "Split"
+    )
+  ) %>%
+  select(Full_State_Name, Winning_Party)
+
+# 2. Filter Top 20 and Join with Party Data
+top_20_party <- Final_Data %>%
+  arrange(desc(`Amount in Billions`)) %>%
+  head(20) %>%
+  mutate(Join_Name = toupper(`State Teritory or Tribal Nation`)) %>%
+  left_join(election_prep, by = c("Join_Name" = "Full_State_Name"))
+
+# 3. Reshape and Apply Label Logic
+plot_data_top <- top_20_party %>%
+  mutate(Pop_For_Shading = `Total Population`) %>% 
+  pivot_longer(
+    cols = c(`Amount in Billions`, `Total Population`),
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  mutate(
+    Hjust_Val = ifelse(`State Teritory or Tribal Nation` == "CALIFORNIA", 1.1, -0.1),
+    Color_Val = ifelse(`State Teritory or Tribal Nation` == "CALIFORNIA", "white", "black")
+  )
+
+# 4. Create the Plot
+ggplot(plot_data_top, aes(x = reorder(`State Teritory or Tribal Nation`, Value), 
+                          y = Value, 
+                          fill = Winning_Party,        
+                          alpha = Pop_For_Shading)) + 
+  
+  # Bars
+  geom_bar(stat = "identity", width = 0.7) +
+  
+  # Facet
+  facet_wrap(~Metric, scales = "free_x") +
+  
+  # Horizontal
+  coord_flip() +
+  
+  # Labels
+  geom_text(aes(label = ifelse(Metric == "Amount in Billions", 
+                               paste0("$", round(Value, 2), "B"), 
+                               format(round(Value), big.mark = ",", scientific = FALSE)),
+                hjust = Hjust_Val, 
+                color = Color_Val), 
+            size = 3.5) +
+  
+  # Text Colors
+  scale_color_identity() +
+  
+  # Party Colors
+  scale_fill_manual(values = c("Democrat" = "#08519c", 
+                               "Republican" = "#a50f15", 
+                               "Split" = "gray50")) +
+  
+  # Shading (Legend Removed)
+  scale_alpha_continuous(range = c(0.4, 1), 
+                         guide = "none") + 
+  
+  # Formatting
+  scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+  
+  # Titles & Theme
+  labs(title = "With High Populations, the Largest States Dominate Funding",
+       subtitle = "Darker bars indicate higher population.",
+       x = NULL,
+       y = NULL,
+       fill = "2020 Winner") +
+  
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 10, r = 20, b = 10, l = 10)
+  )
+```
+
+
+**Small Populations, Big Differences in Funding.**
+
+Wyoming and Vermont have the smallest populations among the 50 states according to the 2020 Census. While population data for U.S. territories and tribal nations is often listed separately, these locations also receive significant funding. Small Populations with big Differences in Funding can be seen by making a comparison between Wyoming that received 1.6 billions in funding with a population of 576,851 well as New Hampshire that has double the population recieved 750 million dollars.
+
+```{r}
+# 2. Filter for the 20 LOWEST Funded
+lowest_20_data <- Final_Data %>%
+  arrange(`Amount in Billions`) %>%
+  head(20)
+
+# 3. Join with Election Data to get Party
+lowest_20_merged <- lowest_20_data %>%
+  mutate(Join_Name = toupper(`State Teritory or Tribal Nation`)) %>%
+  left_join(election_prep, by = c("Join_Name" = "Full_State_Name")) %>%
+  # Label Territories (NA party) as "Non-Voting"
+  mutate(Winning_Party = ifelse(is.na(Winning_Party), "Non-Voting", Winning_Party))
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+
+# 1. Filter and Reshape (Using your existing data)
+lowest_20_party <- lowest_20_merged %>% 
+  arrange(`Amount in Billions`) %>%
+  head(20)
+
+plot_data_low_party <- lowest_20_party %>%
+  mutate(Pop_For_Shading = `Total Population`) %>% 
+  pivot_longer(
+    cols = c(`Amount in Billions`, `Total Population`),
+    names_to = "Metric",
+    values_to = "Value"
+  )
+
+# 2. Create the Plot
+ggplot(plot_data_low_party, aes(x = reorder(Join_Name, -Value), 
+                                y = Value, 
+                                fill = Winning_Party,      
+                                alpha = Pop_For_Shading)) + 
+  
+  # Bars
+  geom_bar(stat = "identity", width = 0.7) +
+  
+  # Facet
+  facet_wrap(~Metric, scales = "free_x") +
+  
+  # Horizontal
+  coord_flip() +
+  
+  # Add Labels
+  geom_text(aes(label = ifelse(Metric == "Amount in Billions", 
+                               paste0("$", round(Value, 3), "B"), 
+                               format(round(Value), big.mark = ",", scientific = FALSE))),
+            hjust = -0.1, 
+            color = "black",
+            size = 3.5,
+            alpha = 1) + 
+  
+  # --- COLORS & SCALES ---
+  
+  # 1. Party Colors
+  scale_fill_manual(values = c("Democrat" = "#08519c", 
+                               "Republican" = "#a50f15", 
+                               "Non-Voting" = "#7f7f7f",
+                               "Split" = "gray50")) +
+  
+  # 2. Population Shading (Legend REMOVED with guide="none")
+  scale_alpha_continuous(range = c(0.4, 1), 
+                         guide = "none") + 
+  
+  # Expansion for labels
+  scale_y_continuous(expand = expansion(mult = c(0, 0.45))) +
+  
+  # Titles
+  labs(title = "Small Populations, Big Differences in Funding.",
+      
+       x = NULL,
+       y = NULL,
+       fill = "2020 Winner") +
+  
+  # Theme
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 10, r = 10, b = 10, l = 10),
+    
+    # --- LEGEND CHANGE IS HERE ---
+    legend.position = "right" # Places legend on the right side, vertically centered
+  )
+```
+
+
+
+**Infrastructure Funding Per Capita by State.**
+  
+
+ 
+Data on Infrastructure funding per capita reveals a stark contrast. Alaska, a Republican state, received approximately $5,000 per resident, giving it a significant advantage in funding basic community connectivity. In comparison, Florida, a republican densely populated state of 21 million, received less than $500 per capita. While per capita allocations for tribal nations remain unclear due to data limitations, the overall trend is evident. Under the Biden administration, Republican leaning states secured the highest funding per capita, largely due to formulas prioritizing extensive infrastructure needs in sparsely populated areas.
+
+
+
+```{r}
+
+# 1. Prepare Election Data
+election_prep <- election_data %>%
+  mutate(
+    Full_State_Name = toupper(state.name[match(State, state.abb)]),
+    Full_State_Name = ifelse(State == "DC", "DISTRICT OF COLUMBIA", Full_State_Name),
+    Winning_Party = case_when(
+      Electoral_Votes_Biden > Electoral_Votes_Trump ~ "Democrat",
+      Electoral_Votes_Trump > Electoral_Votes_Biden ~ "Republican",
+      TRUE ~ "Split"
+    )
+  ) %>%
+  select(Full_State_Name, Winning_Party)
+
+# 2. Prepare Per Capita Data for ALL States
+per_capita_data <- Final_Data %>%
+  # Calculate Per Capita
+  mutate(Per_Capita_Funding = (`Amount in Billions` * 1000000000) / `Total Population`,
+         Join_Name = toupper(`State Teritory or Tribal Nation`)) %>%
+  # Join with Election Data
+  left_join(election_prep, by = c("Join_Name" = "Full_State_Name")) %>%
+  # Label Territories
+  mutate(Winning_Party = ifelse(is.na(Winning_Party), "Non-Voting", Winning_Party))
+
+# 3. Create the Plot
+ggplot(per_capita_data, aes(x = reorder(`State Teritory or Tribal Nation`, Per_Capita_Funding), 
+                            y = Per_Capita_Funding, 
+                            fill = Winning_Party,       
+                            alpha = `Total Population`)) + # Keep shading logic
+  
+  # Bars (Removed geom_text to hide funding amounts)
+  geom_bar(stat = "identity", width = 0.8) +
+  
+  # Horizontal Bars
+  coord_flip() +
+  
+  # --- COLORS & SCALES ---
+  
+  # 1. Party Colors
+  scale_fill_manual(values = c("Democrat" = "#08519c",     
+                               "Republican" = "#a50f15",   
+                               "Non-Voting" = "#7f7f7f")) + 
+  
+  # 2. Population Shading (Guide = "none" removes the legend)
+  scale_alpha_continuous(range = c(0.3, 1), 
+                         guide = "none") + 
+  
+  # Titles & Theme
+  labs(title = "Infrastructure Funding Per Capita by State",
+       subtitle = "Color indicates 2020 Election Winner. Darker bars = Higher Population.",
+       x = NULL,
+       y = "Funding Per Person ($)",
+       fill = "Party") + # Kept Party legend, removed Population legend
+  
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_text(size = 7), # Adjusted text size to fit 50 states
+    legend.position = "right",
+    plot.margin = margin(t = 10, r = 20, b = 10, l = 10)
+  )
+```
+
+
+**Funding Rank vs. Population for Top 20 Recipients**
+
+
+The Funding Rank versus Population visualization below for top 20 Recipients of funding show that 5 Republican states received the most funding per capita.
+
+```{r}
+
+# 1. Prepare Election Data
+election_prep <- election_data %>%
+  mutate(
+    Full_State_Name = toupper(state.name[match(State, state.abb)]),
+    Full_State_Name = ifelse(State == "DC", "DISTRICT OF COLUMBIA", Full_State_Name),
+    Winning_Party = case_when(
+      Electoral_Votes_Biden > Electoral_Votes_Trump ~ "Democrat",
+      Electoral_Votes_Trump > Electoral_Votes_Biden ~ "Republican",
+      TRUE ~ "Split"
+    )
+  ) %>%
+  select(Full_State_Name, Winning_Party)
+
+# 2. Calculate Ranks & Filter Top 20
+rank_data <- Final_Data %>%
+  mutate(
+    Funding_Rank = min_rank(desc(`Amount in Billions`)),  # Rank 1 = Highest Funding
+    Join_Name = toupper(`State Teritory or Tribal Nation`)
+  ) %>%
+  arrange(Funding_Rank) %>%
+  head(20) %>% 
+  left_join(election_prep, by = c("Join_Name" = "Full_State_Name"))
+
+# 3. Reshape for Plotting
+plot_data_rank <- rank_data %>%
+  mutate(Pop_For_Shading = `Total Population`) %>% 
+  pivot_longer(
+    cols = c(Funding_Rank, `Total Population`), # Funding Rank vs Actual Population
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  mutate(
+    # Clean up Metric names for the strip text
+    Metric = ifelse(Metric == "Funding_Rank", "Funding Rank", "Total Population")
+  )
+
+# 4. Create the Plot
+ggplot(plot_data_rank, aes(x = reorder(`State Teritory or Tribal Nation`, -Value), # Sorts appropriately
+                           y = Value, 
+                           fill = Winning_Party,        
+                           alpha = Pop_For_Shading)) + 
+  
+  # Bars
+  geom_bar(stat = "identity", width = 0.7) +
+  
+  # Facet with FREE scales (Critical because Rank is 1-20 but Pop is Millions)
+  facet_wrap(~Metric, scales = "free_x") +
+  
+  # Horizontal
+  coord_flip() +
+  
+  # Labels: ONLY show labels for Population, hide for Rank
+  geom_text(aes(label = ifelse(Metric == "Total Population", 
+                               format(Value, big.mark = ",", scientific = FALSE), 
+                               "")), # Empty string for Rank
+            hjust = -0.1, 
+            color = "black", 
+            size = 3.5) +
+  
+  # Colors
+  scale_color_identity() +
+  scale_fill_manual(values = c("Democrat" = "#08519c", 
+                               "Republican" = "#a50f15", 
+                               "Split" = "gray50")) +
+  
+  # Shading (Legend Removed)
+  scale_alpha_continuous(range = c(0.4, 1), guide = "none") + 
+  
+  # Expansion to fit long population numbers
+  scale_y_continuous(expand = expansion(mult = c(0, 0.3))) +
+  
+  # Titles & Theme
+  labs(title = "Funding Rank vs. Population for Top 20 Recipients",
+       x = NULL,
+       y = NULL,
+       fill = "2020 Winner") +
+  
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 10, r = 20, b = 10, l = 10)
+  )
+```
+
+
+
+**The Verdict**
+
+
+
+The data tells a story of two Americas. For the densely populated states like California and Texas, the IIJA is a massive dollar value investment scaling with their big populations. But for rural states like Wyoming and Alaska, it represents a strategic, high value investment that acknowledges the high cost of connecting remote citizens. The distribution of funds under the IIJA does not correlate strictly with population magnitude or political affiliation. Instead, the data suggests a needs based allocation model, prioritizing states with significant infrastructure deficiencies such as highway networks or aging bridges over simple per capita metrics regardless of Political inclining. That would be the reason why even when the democrats won the elections in 2020 Republican states received the most funding per capita.
+
+
+Resources
+U.S. Census Bureau Website Census.gov  #https://data.census.gov/table/DECENNIALCD1182020.P1?q=populations+by+state
+
+https://www.fec.gov/resources/cms-content/documents/2020presgeresults.pdf
