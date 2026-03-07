@@ -1,0 +1,622 @@
+Show in New Window
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/farver_2.1.2.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/labeling_0.4.3.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/RColorBrewer_1.1-3.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/viridisLite_0.4.3.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/gtable_0.3.6.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/isoband_0.3.0.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/S7_0.2.1.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/scales_1.4.0.tar.gz'
+trying URL 'http://rspm/default/__linux__/noble/latest/src/contrib/ggplot2_4.0.2.tar.gz'
+
+The downloaded source packages are in
+	‘/tmp/Rtmpr3VLlc/downloaded_packages’
+Show in New Window
+Description:df [50 × 5]
+Series
+<chr>
+State
+<chr>
+Strength.of.Gun.Laws
+<dbl>
+Gun.Deaths.per.100.000.Residents
+<dbl>
+gun_law_strength
+<fctr>
+State	AL	12.0	25.6	1
+State	AK	9.0	23.5	1
+State	AZ	7.5	18.5	1
+State	AR	4.5	21.9	1
+State	CA	90.5	8.0	5
+State	CO	67.5	16.6	4
+State	CT	81.5	6.2	5
+State	DE	65.0	12.0	4
+State	FL	28.0	13.7	2
+State	GA	5.0	18.6	1
+1-10 of 50 rows
+Show in New Window
+
+Show in New Window
+
+ 1 - Most Lax       2 - Lax  3 - Moderate    4 - Strict 5 - Strictest 
+           25             8             4             6             7 
+Show in New Window
+
+Show in New Window
+
+Show in New Window
+Description:df [6 × 3]
+ 
+ 
+Label
+<chr>
+bins_gun_deaths_per_100000_residents
+<fctr>
+gun_deaths_per_100000_residents
+<dbl>
+1	AL	21.34 - < 27.62	25.6	
+2	AK	21.34 - < 27.62	23.5	
+3	AZ	15.06 - < 21.34	18.5	
+4	AR	21.34 - < 27.62	21.9	
+5	CA	0 - < 8.78	8.0	
+6	CO	15.06 - < 21.34	16.6	
+6 rows
+Show in New Window
+Description:df [6 × 7]
+ 
+ 
+Label
+<chr>
+bins_gun_deaths_per_100000_residents
+<fctr>
+gun_deaths_per_100000_residents
+<dbl>
+Series
+<chr>
+1	AL	21.34 - < 27.62	25.6	State	
+2	AK	21.34 - < 27.62	23.5	State	
+3	AZ	15.06 - < 21.34	18.5	State	
+4	AR	21.34 - < 27.62	21.9	State	
+5	CA	0 - < 8.78	8.0	State	
+6	CO	15.06 - < 21.34	16.6	State	
+6 rows | 1-5 of 7 columns
+Show in New Window
+Description:df [6 × 7]
+ 
+ 
+Label
+<chr>
+bins_gun_deaths_per_100000_residents
+<fctr>
+gun_deaths_per_100000_residents
+<dbl>
+Series
+<chr>
+1	AL	21.34 - < 27.62	25.6	State	
+2	AK	21.34 - < 27.62	23.5	State	
+3	AZ	15.06 - < 21.34	18.5	State	
+4	AR	21.34 - < 27.62	21.9	State	
+5	CA	0 - < 8.78	8.0	State	
+6	CO	15.06 - < 21.34	16.6	State	
+6 rows | 1-5 of 7 columns
+Show in New Window
+
+Show in New Window
+
+Show in New Window
+
+Show in New Window
+
+> library(ggplot2)
+> library(dplyr)
+> library(patchwork)
+> > # ==========================================
+> # 1. BUILD THE SUMMARY PLOT
+> # ==========================================
+> likert_summary <- data.frame(
++   Likert_Bin = c("1 - Most Lax", "2 - Lax", "3 - Moderate", "4 - Strict", "5 - Strictest"),
++   State_Count = c(25, 8, 4, 6, 7)
++ )
+> likert_summary$Likert_Bin <- factor(likert_summary$Likert_Bin, levels = likert_summary$Likert_Bin)
+> > summary_plot <- ggplot(likert_summary, aes(x = Likert_Bin, y = "All States", fill = Likert_Bin)) +
++   geom_tile(color = "white", linewidth = 1) +
++   
++   # Text turns white on dark bins (1, 2) and black on light bins
++   geom_text(
++     aes(
++       label = State_Count, 
++       color = ifelse(Likert_Bin %in% c("1 - Most Lax", "2 - Lax"), "white", "black")
++     ), 
++     size = 6, 
++     fontface = "bold"
++   ) +
++   
++   scale_fill_brewer(palette = "Reds", direction = -1) + 
++   scale_color_identity() + 
++   
++   labs(
++     title = "Total Count of States by Gun Law Strength",
++     x = NULL, 
++     y = NULL
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "none", 
++     panel.grid = element_blank(),
++     axis.text.y = element_blank(),
++     plot.title = element_text(hjust = 0.5, face = "bold", margin = margin(b = 15)),
++     axis.text.x = element_blank() 
++   )
+> > # ==========================================
+> # 2. BUILD THE DETAILED STATE PLOT
+> # ==========================================
+> detailed_bins <- gun_laws_full %>%
++   filter(!is.na(law_likert_5pt)) %>%
++   group_by(law_likert_5pt) %>%
++   arrange(State) %>%
++   mutate(stack_pos = row_number()) %>% 
++   ungroup()
+> > state_plot <- ggplot(detailed_bins, aes(x = law_likert_5pt, y = stack_pos)) +
++   geom_tile(aes(fill = law_likert_5pt), color = "white", linewidth = 0.5) +
++   
++   # UPDATE: Removed toupper(), just using the standard 'State' column
++   geom_text(
++     aes(
++       label = State, 
++       color = ifelse(law_likert_5pt %in% c("1 - Most Lax", "2 - Lax"), "white", "black")
++     ), 
++     size = 3, 
++     fontface = "bold"
++   ) +
++   
++   scale_fill_brewer(palette = "Reds", direction = -1) +
++   scale_color_identity() + 
++   
++   labs(
++     title = "Which States are in Each Bin?",
++     x = "Likert Scale (1 = Most Lax to 5 = Strictest)",
++     y = NULL
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "none",          
++     panel.grid = element_blank(),
++     axis.text.y = element_blank(),     
++     plot.title = element_text(hjust = 0.5, face = "bold"),
++     axis.text.x = element_text(size = 11, face = "bold")
++   )
+> > # ==========================================
+> # 3. COMBINE WITH PATCHWORK
+> # ==========================================
+> combined_dashboard <- summary_plot / state_plot +
++   plot_layout(heights = c(1, 4)) 
+> > print(combined_dashboard)
+> > > gun_laws_full <- gun_laws_full %>%
++   mutate(
++     # cut_interval divides the scoring range into 5 equal sections
++     law_likert_5pt = cut_interval(
++       gun_law_strength, 
++       n = 5, 
++       labels = c(
++         "1 - Most Lax", 
++         "2 - Lax", 
++         "3 - Moderate", 
++         "4 - Strict", 
++         "5 - Strictest"
++       )
++     )
++   )
+> > # Check how many states landed in each bin
+> table(gun_laws_full$law_likert_5pt)
+
+ 1 - Most Lax       2 - Lax  3 - Moderate    4 - Strict 5 - Strictest 
+           25             8             4             6             7 
+> > > # 1. Manually create a dataframe from your table results
+> likert_summary <- data.frame(
++   Likert_Bin = c("1 - Most Lax", "2 - Lax", "3 - Moderate", "4 - Strict", "5 - Strictest"),
++   State_Count = c(25, 8, 4, 6, 7)
++ )
+> > # 2. Lock the factor levels so they plot in the correct 1-to-5 order
+> likert_summary$Likert_Bin <- factor(likert_summary$Likert_Bin, levels = likert_summary$Likert_Bin)
+> > # 3. Build the Heatmap
+> ggplot(likert_summary, aes(x = Likert_Bin, y = "All States", fill = State_Count)) +
++   
++   # geom_tile draws the heatmap squares
++   geom_tile(color = "white", linewidth = 1) +
++   
++   # Add the exact count of states inside each square
++   geom_text(aes(label = State_Count), color = "black", size = 6, fontface = "bold") +
++   
++   # Apply a color gradient (darker red = more states)
++   scale_fill_distiller(palette = "Reds", direction = 1) +
++   
++   labs(
++     title = "Count of States by Gun Law Strength",
++     x = "Likert Scale (1 = Most Lax to 5 = Strictest)",
++     y = NULL,
++     fill = "Number of States"
++   ) +
++   
++   theme_minimal() +
++   theme(
++     panel.grid = element_blank(),      # Remove background gridlines
++     axis.text.y = element_blank(),     # Hide the dummy "All States" text on the Y axis
++     plot.title = element_text(hjust = 0.5, face = "bold", margin = margin(b = 15)),
++     axis.text.x = element_text(size = 11, face = "bold")
++   )
+> > > # ==========================================
+> # 1. BUILD THE SUMMARY PLOT
+> # ==========================================
+> likert_summary <- data.frame(
++   Likert_Bin = c("1 - Most Lax", "2 - Lax", "3 - Moderate", "4 - Strict", "5 - Strictest"),
++   State_Count = c(25, 8, 4, 6, 7)
++ )
+> likert_summary$Likert_Bin <- factor(likert_summary$Likert_Bin, levels = likert_summary$Likert_Bin)
+> > summary_plot <- ggplot(likert_summary, aes(x = Likert_Bin, y = "All States", fill = Likert_Bin)) +
++   geom_tile(color = "white", linewidth = 1) +
++   
++   # Text turns white on dark bins (1, 2) and black on light bins
++   geom_text(
++     aes(
++       label = State_Count, 
++       color = ifelse(Likert_Bin %in% c("1 - Most Lax", "2 - Lax"), "white", "black")
++     ), 
++     size = 6, 
++     fontface = "bold"
++   ) +
++   
++   scale_fill_brewer(palette = "Reds", direction = -1) + 
++   scale_color_identity() + 
++   
++   labs(
++     title = "Total Count of States by Gun Law Strength",
++     x = NULL, 
++     y = NULL
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "none", 
++     panel.grid = element_blank(),
++     axis.text.y = element_blank(),
++     plot.title = element_text(hjust = 0.5, face = "bold", margin = margin(b = 15)),
++     axis.text.x = element_blank() 
++   )
+> > # ==========================================
+> # 2. BUILD THE DETAILED STATE PLOT
+> # ==========================================
+> detailed_bins <- gun_laws_full %>%
++   filter(!is.na(law_likert_5pt)) %>%
++   group_by(law_likert_5pt) %>%
++   arrange(State) %>%
++   mutate(stack_pos = row_number()) %>% 
++   ungroup()
+> > state_plot <- ggplot(detailed_bins, aes(x = law_likert_5pt, y = stack_pos)) +
++   geom_tile(aes(fill = law_likert_5pt), color = "white", linewidth = 0.5) +
++   
++   # UPDATE: Removed toupper(), just using the standard 'State' column
++   geom_text(
++     aes(
++       label = State, 
++       color = ifelse(law_likert_5pt %in% c("1 - Most Lax", "2 - Lax"), "white", "black")
++     ), 
++     size = 3, 
++     fontface = "bold"
++   ) +
++   
++   scale_fill_brewer(palette = "Reds", direction = -1) +
++   scale_color_identity() + 
++   
++   labs(
++     title = "Which States are in Each Bin?",
++     x = "Likert Scale (1 = Most Lax to 5 = Strictest)",
++     y = NULL
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "none",          
++     panel.grid = element_blank(),
++     axis.text.y = element_blank(),     
++     plot.title = element_text(hjust = 0.5, face = "bold"),
++     axis.text.x = element_text(size = 11, face = "bold")
++   )
+> > # ==========================================
+> # 3. COMBINE WITH PATCHWORK
+> # ==========================================
+> combined_dashboard <- summary_plot / state_plot +
++   plot_layout(heights = c(1, 4)) 
+> > print(combined_dashboard)
+> > > # ==========================================
+> # 1. BUILD THE SUMMARY PLOT
+> # ==========================================
+> likert_summary <- data.frame(
++   Likert_Bin = c("1 - Most Lax", "2 - Lax", "3 - Moderate", "4 - Strict", "5 - Strictest"),
++   State_Count = c(25, 8, 4, 6, 7)
++ )
+> likert_summary$Likert_Bin <- factor(likert_summary$Likert_Bin, levels = likert_summary$Likert_Bin)
+> > summary_plot <- ggplot(likert_summary, aes(x = Likert_Bin, y = "All States", fill = Likert_Bin)) +
++   geom_tile(color = "white", linewidth = 1) +
++   
++   # UPDATE 1: Hardcoded color to "black" for all numbers
++   geom_text(
++     aes(label = State_Count), 
++     color = "black", 
++     size = 6, 
++     fontface = "bold"
++   ) +
++   
++   scale_fill_brewer(palette = "Reds", direction = -1) + 
++   
++   labs(
++     title = "Total Count of States by Gun Law Strength",
++     x = NULL, 
++     y = NULL
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "none", 
++     panel.grid = element_blank(),
++     axis.text.y = element_blank(),
++     plot.title = element_text(hjust = 0.5, face = "bold", margin = margin(b = 15)),
++     axis.text.x = element_blank() 
++   )
+> > # ==========================================
+> # 2. BUILD THE DETAILED STATE PLOT
+> # ==========================================
+> detailed_bins <- gun_laws_full %>%
++   filter(!is.na(law_likert_5pt)) %>%
++   group_by(law_likert_5pt) %>%
++   arrange(State) %>%
++   mutate(stack_pos = row_number()) %>% 
++   ungroup()
+> > state_plot <- ggplot(detailed_bins, aes(x = law_likert_5pt, y = stack_pos)) +
++   geom_tile(aes(fill = law_likert_5pt), color = "white", linewidth = 0.5) +
++   
++   # UPDATE 2: label = State (full name) and color = "black" for all blocks
++   geom_text(
++     aes(label = State), 
++     color = "black", 
++     size = 3, 
++     fontface = "bold"
++   ) +
++   
++   scale_fill_brewer(palette = "Reds", direction = -1) +
++   
++   labs(
++     title = "Which States are in Each Bin?",
++     x = "Likert Scale (1 = Most Lax to 5 = Strictest)",
++     y = NULL
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "none",          
++     panel.grid = element_blank(),
++     axis.text.y = element_blank(),     
++     plot.title = element_text(hjust = 0.5, face = "bold"),
++     axis.text.x = element_text(size = 11, face = "bold")
++   )
+> > # ==========================================
+> # 3. COMBINE WITH PATCHWORK
+> # ==========================================
+> combined_dashboard <- summary_plot / state_plot +
++   plot_layout(heights = c(1, 4)) 
+> > print(combined_dashboard)
+> > Gun_Mortality_Likert <- gun_mortalityData %>%
++   mutate(
++     Death.Rate = as.numeric(Death.Rate),
++     bins_gun_deaths_per_100000_residents = cut(
++       Death.Rate,
++       breaks = c(0, 8.78, 15.06, 21.34, 27.62, 33.9),
++       labels = c(
++         "0 - < 8.78",
++         "8.78 - < 15.06",
++         "15.06 - < 21.34",
++         "21.34 - < 27.62",
++         "27.62 - < 33.9"
++       ),
++       include.lowest = TRUE,
++       right = FALSE
++     )
++   )
+> Gun_Mortality_Likert <- Gun_Mortality_Likert %>%
++   select(
++     Label = Location,
++     bins_gun_deaths_per_100000_residents,
++     gun_deaths_per_100000_residents = Death.Rate
++   )
+> head(Gun_Mortality_Likert)
+> > > Gun_Data_Combined <- Gun_Mortality_Likert %>%
++   left_join(gun_laws, by = c("Label" = "State"))
+> > head(Gun_Data_Combined)
+> > Gun_Data_Combined <- Gun_Mortality_Likert %>%
++   left_join(gun_laws, by = c("Label" = "State"))
+> > head(Gun_Data_Combined)
+> state_lookup <- data.frame(
++   Label = state.abb,      # abbrev
++   State = state.name,     # full name
++   stringsAsFactors = FALSE
++ )
+> > # Add full state names to Gun_Data_Combined
+> Gun_Data_Combined <- Gun_Data_Combined %>%
++   left_join(state_lookup, by = "Label")
+> > > # 1. Join and prepare the data
+> plot_data <- Gun_Data_Combined %>%
++   # Get unique State and Label combinations
++   distinct(State, Label) %>%
++   # Ensure correct spelling of Delaware if it appears misspelled in the raw data
++   mutate(State = ifelse(toupper(State) == "DELEWARE", "Delaware", State)) %>%
++   # Join with gun_laws_full where Gun_Data_Combined's 'Label' matches gun_laws_full's 'State'
++   inner_join(gun_laws_full, by = c("Label" = "State")) %>%
++   # Select only the necessary columns, renaming State to Display_State for clarity
++   select(Display_State = State, gun_law_strength, Gun.Deaths.per.100.000.Residents)
+> > # 2. Reshape data from wide to long so both metrics can be plotted side-by-side
+> plot_data_long <- plot_data %>%
++   pivot_longer(
++     cols = c(gun_law_strength, Gun.Deaths.per.100.000.Residents),
++     names_to = "Metric",
++     values_to = "Value"
++   ) %>%
++   mutate(
++     # Clean up metric names for the legend
++     Metric = ifelse(Metric == "gun_law_strength", 
++                     "Gun Law Strength", 
++                     "Gun Deaths per 100k")
++   )
+> > # 3. Build the horizontal visualization
+> ggplot(plot_data_long, aes(x = Value, 
++                            y = reorder(Display_State, Value), 
++                            fill = Metric)) +
++   
++   # position = "dodge" places the two metric columns side-by-side for each state
++   geom_col(position = "dodge") +
++   
++   scale_fill_manual(values = c("Law Strength" = "#2b8cbe", 
++                                "Gun Deaths per 100k" = "#de2d26")) +
++   
++   labs(
++     title = "Gun Law Strength vs. Gun Deaths by State",
++     x = "Value",
++     y = NULL,
++     fill = "Metric"
++   ) +
++   
++   theme_minimal() +
++   theme(
++     legend.position = "top",
++     panel.grid.major.y = element_blank() # Removes horizontal gridlines for a cleaner look
++   )
+> > > # 1. Join and prepare the data
+> plot_data <- Gun_Data_Combined %>%
++   # Get unique State and Label combinations
++   distinct(State, Label) %>%
++   # Ensure correct spelling of Delaware if it appears misspelled in the raw data
++   mutate(State = ifelse(toupper(State) == "DELEWARE", "Delaware", State)) %>%
++   # Join with gun_laws_full where Gun_Data_Combined's 'Label' matches gun_laws_full's 'State'
++   inner_join(gun_laws_full, by = c("Label" = "State")) %>%
++   # Select only the necessary columns, renaming State to Display_State for clarity
++   select(Display_State = State, gun_law_strength, Gun.Deaths.per.100.000.Residents)
+> > # 2. Reshape data from wide to long so both metrics can be plotted side-by-side
+> plot_data_long <- plot_data %>%
++   pivot_longer(
++     cols = c(gun_law_strength, Gun.Deaths.per.100.000.Residents),
++     names_to = "Metric",
++     values_to = "Value"
++   ) %>%
++   mutate(
++     # Clean up metric names for the legend
++     Metric = ifelse(Metric == "gun_law_strength", 
++                     "Gun Law Strength", 
++                     "Gun Deaths per 100k")
++   )
+> > # 3. Build the horizontal visualization
+> ggplot(plot_data_long, aes(x = Value, 
++                            y = reorder(Display_State, Value), 
++                            fill = Metric)) +
++   
++   # position = "dodge" places the two metric columns side-by-side for each state
++   geom_col(position = "dodge") +
++   
++   scale_fill_manual(values = c("Gun_Law_Strength" = "#2b8cbe", 
++                                "Gun Deaths per 100k" = "#de2d26")) +
++   
++   labs(
++     title = "Gun Law Strength vs. Gun Deaths by State",
++     x = "Value",
++     y = NULL,
++     fill = "Metric"
++   ) +
++   
++   theme_minimal() +
++   theme(
++     legend.position = "top",
++     panel.grid.major.y = element_blank() # Removes horizontal gridlines for a cleaner look
++   )
+> # Apply the exact same color scale so the two charts match perfectly
+> plot_bottom5 <- plot(likert_bottom5, colors = custom_colors) +
++   labs(
++     title = "Gun Death Rate Distributions for 5 States with lowest Mortality",
++     x = NULL,
++     y = "Percentage of Years in Each Rate Bin"
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "bottom",
++     legend.title = element_blank(), # <--- THIS REMOVES THE WORD "Response"
++     plot.title = element_text(hjust = 0.5, face = "bold"),
++     axis.text.y = element_text(size = 11, face = "bold")
++   )
+Warning: The `size` argument of `element_rect()` is deprecated as of ggplot2 3.4.0.
+ℹ Please use the `linewidth` argument instead.
+ℹ The deprecated feature was likely used in the likert package.
+  Please report the issue at <https://github.com/jbryer/likert/issues>.
+This warning is displayed once per session.
+Call warnings()lifecycle::last_lifecycle_warnings() to see where this warning was generated.
+
+> > print(plot_bottom5)
+> > library(dplyr)
+> library(tidyr)
+> library(ggplot2)
+> library(likert)
+> > # 1. Join the datasets to link the Label to the actual State name
+> df_joined <- Gun_Mortality_Likert %>%
++   inner_join(Gun_Data_Combined %>% distinct(Label, State), by = "Label")
+> > # Extract the exact spelling of your bins dynamically
+> my_bin_levels <- levels(df_joined$bins_gun_deaths_per_100000_residents)
+> > # 2. Convert to an ordered factor using those exact levels
+> df_likert_prep <- df_joined %>%
++   mutate(
++     bins_gun_deaths_per_100000_residents = factor(
++       bins_gun_deaths_per_100000_residents,
++       levels = my_bin_levels, # <--- This fixes the NA issue!
++       ordered = TRUE
++     )
++   ) %>%
++   # likert() strongly prefers standard dataframes over dplyr tibbles
++   as.data.frame() %>% 
++   filter(!is.na(bins_gun_deaths_per_100000_residents), !is.na(State))
+> > # 3. Create the likert object
+> my_likert_data <- likert(
++   items = df_likert_prep[, "bins_gun_deaths_per_100000_residents", drop = FALSE],
++   grouping = df_likert_prep$State
++ )
+> > # 4. Build the visualization
+> plot(my_likert_data) +
++   labs(
++     title = "Distribution of Gun Death Rate Bins by State",
++     x = "Percentage of Years in Each Rate Bin", 
++     y = "State"
++   ) +
++   theme_minimal() +
++   theme(
++     legend.position = "bottom",
++     plot.title = element_text(hjust = 0.5, face = "bold"),
++     axis.text.y = element_text(size = 9)
++   )
+Session restored from your saved work on 2026-Mar-07 02:18:07 UTC (4 minutes ago)
+> knitr::opts_chunk$set(echo = TRUE)
+> library(ggplot2)
+> 
+> ggplot(heat_data_low, aes(x = factor(Year), y = State_Label)) +
++   geom_tile(aes(fill = Crude.Rate), color = "white") +
++   geom_text(aes(label = round(Crude.Rate, 1)), size = 3.5) +
++   
++   # NEW: Use a blue gradient so it is distinct from the highest states (red)
++   scale_fill_gradient(low = "#eff3ff", high = "#08519c") +
++   
++   scale_y_discrete(position = "right") +
++   
++   labs(
++     title = "10 Lowest Gun Death Rate States (2023) Over the Years", # Updated Title
++     caption = "Gun Law Strength: 1 = Permissive  |  3 = Moderate  |  5 = Strict",
++     x = "Year",
++     y = NULL, 
++     fill = "Crude Rate"
++   ) +
++   
++   theme_minimal() +
++   theme(
++     axis.text.y = element_text(size = 11, face = "bold"), 
++     plot.title = element_text(hjust = 0.5, face = "bold", margin = margin(b = 10)),
++     plot.caption = element_text(hjust = 0.5, size = 10, face = "italic", color = "gray40", margin = margin(t = 15)),
++     panel.grid = element_blank() 
++   )
+> 
