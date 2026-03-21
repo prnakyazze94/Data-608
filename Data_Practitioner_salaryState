@@ -1,0 +1,295 @@
+State	Mean Annual Wage	Role
+Alabama 	$102,970 	Data Scientists
+Alaska 	$88,690 	Data Scientists
+Arizona 	$112,460 	Data Scientists
+Arkansas	$104,560 	Data Scientists
+California 	$155,450 	Data Scientists
+Colorado 	$118,250 	Data Scientists
+Connecticut	$120,270 	Data Scientists
+Delaware 	$8 	Data Scientists
+District of Columbia 	$148,170 	Data Scientists
+Florida	$117,670 	Data Scientists
+Georgia	$111,020 	Data Scientists
+Hawaii 	$124,530 	Data Scientists
+Idaho	$120,410 	Data Scientists
+Illinois 	$119,010 	Data Scientists
+Indiana 	$92,620 	Data Scientists
+Iowa 	$97,300 	Data Scientists
+Kansas 	$107,300 	Data Scientists
+Kentucky	$100,410 	Data Scientists
+Louisiana 	$71,740 	Data Scientists
+Maine 	$101,890 	Data Scientists
+Maryland 	$135,370 	Data Scientists
+Massachusetts 	$139,670 	Data Scientists
+Michigan	$102,030 	Data Scientists
+Minnesota	$118,110 	Data Scientists
+Mississippi 	$77,830 	Data Scientists
+Missouri 	$95,310 	Data Scientists
+Montana	$111,490 	Data Scientists
+Nebraska 	$97,720 	Data Scientists
+Nevada 	$98,820 	Data Scientists
+New Hampshire 	$102,230 	Data Scientists
+New Jersey 	$131,800 	Data Scientists
+New Mexico	$86,520 	Data Scientists
+New York 	$133,450 	Data Scientists
+North Carolina 	$118,020 	Data Scientists
+North Dakota	$94,130 	Data Scientists
+Ohio 	$100,260 	Data Scientists
+Oklahoma 	$89,940 	Data Scientists
+Oregon 	$124,060 	Data Scientists
+Pennsylvania	$107,450 	Data Scientists
+Puerto Rico	$72,370 	Data Scientists
+Rhode Island	$119,400 	Data Scientists
+South Carolina 	$96,970 	Data Scientists
+South Dakota 	$92,460 	Data Scientists
+Tennessee	$114,830 	Data Scientists
+Texas	$114,800 	Data Scientists
+Utah 	$119,640 	Data Scientists
+Vermont 	$119,630 	Data Scientists
+Virginia 	$132,230 	Data Scientists
+Washington 	$162,730 	Data Scientists
+West Virginia 	$102,770 	Data Scientists
+Wisconsin	$105,540 	Data Scientists
+Wyoming	$85,480 	Data Scientists
+Alabama 	$117,510 	Database Architects
+Alaska 	$111,570 	Database Architects
+Arizona 	$135,080 	Database Architects
+Arkansas	$109,380 	Database Architects
+California 	$162,820 	Database Architects
+Colorado 	$152,940 	Database Architects
+Connecticut	$147,910 	Database Architects
+Delaware 	$150,060 	Database Architects
+District of Columbia 	$158,550 	Database Architects
+Florida	$138,280 	Database Architects
+Georgia	$141,590 	Database Architects
+Hawaii 	$150,190 	Database Architects
+Idaho	$130,240 	Database Architects
+Illinois 	$136,370 	Database Architects
+Indiana 	$132,150 	Database Architects
+Iowa 	$124,910 	Database Architects
+Kansas 	$124,980 	Database Architects
+Kentucky	$110,400 	Database Architects
+Louisiana 	(8) -	Database Architects
+Maine 	$134,200 	Database Architects
+Maryland 	$143,020 	Database Architects
+Massachusetts 	$161,000 	Database Architects
+Michigan	$117,600 	Database Architects
+Minnesota	$127,730 	Database Architects
+Mississippi 	$92,400 	Database Architects
+Missouri 	$112,730 	Database Architects
+Montana	$124,500 	Database Architects
+Nebraska 	$129,750 	Database Architects
+Nevada 	$124,010 	Database Architects
+New Jersey 	$144,260 	Database Architects
+New Mexico	$117,620 	Database Architects
+New York 	$137,840 	Database Architects
+North Carolina 	$129,750 	Database Architects
+North Dakota	$112,830 	Database Architects
+Ohio 	$133,170 	Database Architects
+Oklahoma 	$133,880 	Database Architects
+Oregon 	$147,530 	Database Architects
+Pennsylvania	$130,130 	Database Architects
+Puerto Rico	$78,160 	Database Architects
+Rhode Island	$149,350 	Database Architects
+South Carolina 	$128,340 	Database Architects
+South Dakota 	$121,220 	Database Architects
+Tennessee	$125,840 	Database Architects
+Texas	$136,930 	Database Architects
+Utah 	$134,470 	Database Architects
+Vermont 	$8 	Database Architects
+Virginia 	$8 	Database Architects
+Washington 	$147,540 	Database Architects
+West Virginia 	$132,690 	Database Architects
+Wisconsin	$140,770 	Database Architects
+Wyoming	$68,880 	Database Architects
+Alabama 	$92,930 	Database Administrators
+Alaska 	$96,600 	Database Administrators
+Arizona 	$97,340 	Database Administrators
+Arkansas	$82,780 	Database Administrators
+California 	$119,060 	Database Administrators
+Colorado 	$115,970 	Database Administrators
+Connecticut	$103,400 	Database Administrators
+Delaware 	$105,850 	Database Administrators
+District of Columbia 	$120,470 	Database Administrators
+Florida	$102,900 	Database Administrators
+Georgia	$105,590 	Database Administrators
+Hawaii 	$97,380 	Database Administrators
+Idaho	$88,440 	Database Administrators
+Illinois 	$107,750 	Database Administrators
+Indiana 	$85,480 	Database Administrators
+Iowa 	$101,500 	Database Administrators
+Kansas 	$118,250 	Database Administrators
+Kentucky	$86,490 	Database Administrators
+Louisiana 	$89,230 	Database Administrators
+Maine 	$82,210 	Database Administrators
+Maryland 	$124,430 	Database Administrators
+Massachusetts 	$112,090 	Database Administrators
+Michigan	$97,660 	Database Administrators
+Minnesota	$101,010 	Database Administrators
+Mississippi 	$84,830 	Database Administrators
+Missouri 	$94,990 	Database Administrators
+Montana	$83,070 	Database Administrators
+Nebraska 	$96,080 	Database Administrators
+Nevada 	$87,960 	Database Administrators
+New Hampshire 	$109,190 	Database Administrators
+New Jersey 	$126,670 	Database Administrators
+New Mexico	$94,480 	Database Administrators
+New York 	$113,070 	Database Administrators
+North Carolina 	$106,140 	Database Administrators
+North Dakota	$85,950 	Database Administrators
+Ohio 	$96,400 	Database Administrators
+Oklahoma 	$87,430 	Database Administrators
+Oregon 	$105,050 	Database Administrators
+Pennsylvania	$105,100 	Database Administrators
+Puerto Rico	$57,950 	Database Administrators
+Rhode Island	$104,100 	Database Administrators
+South Carolina 	$99,890 	Database Administrators
+South Dakota 	$87,610 	Database Administrators
+Tennessee	$100,650 	Database Administrators
+Texas	$109,330 	Database Administrators
+Utah 	$105,050 	Database Administrators
+Vermont 	$99,980 	Database Administrators
+Virginia 	$113,810 	Database Administrators
+Washington 	$118,000 	Database Administrators
+West Virginia 	$73,530 	Database Administrators
+Wisconsin	$104,550 	Database Administrators
+Wyoming	$73,300 	Database Administrators
+Alabama 	$118,370 	Analysts
+Alaska 	$102,840 	Analysts
+Arizona 	$86,510 	Analysts
+Arkansas	$75,670 	Analysts
+California 	$108,220 	Analysts
+Colorado 	$109,360 	Analysts
+Connecticut	$96,720 	Analysts
+Delaware 	$103,380 	Analysts
+District of Columbia 	$123,890 	Analysts
+Florida	$84,420 	Analysts
+Georgia	$81,560 	Analysts
+Hawaii 	$100,090 	Analysts
+Idaho	$86,030 	Analysts
+Illinois 	$110,230 	Analysts
+Indiana 	$92,040 	Analysts
+Iowa 	$89,480 	Analysts
+Kansas 	$99,860 	Analysts
+Kentucky	$88,980 	Analysts
+Louisiana 	$70,970 	Analysts
+Maine 	$94,740 	Analysts
+Maryland 	$106,230 	Analysts
+Massachusetts 	$98,830 	Analysts
+Michigan	$95,200 	Analysts
+Minnesota	$97,620 	Analysts
+Mississippi 	$86,390 	Analysts
+Missouri 	$66,330 	Analysts
+Montana	$75,230 	Analysts
+Nebraska 	$96,790 	Analysts
+Nevada 	$93,880 	Analysts
+New Hampshire 	$92,380 	Analysts
+New Jersey 	$111,990 	Analysts
+New Mexico	$91,340 	Analysts
+New York 	$117,110 	Analysts
+North Carolina 	$98,910 	Analysts
+North Dakota	$81,460 	Analysts
+Ohio 	$101,160 	Analysts
+Oklahoma 	$63,790 	Analysts
+Oregon 	$101,650 	Analysts
+Pennsylvania	$85,490 	Analysts
+Puerto Rico	$69,040 	Analysts
+Rhode Island	$109,570 	Analysts
+South Carolina 	$82,120 	Analysts
+Tennessee	$83,020 	Analysts
+Texas	$101,100 	Analysts
+Utah 	$84,840 	Analysts
+Vermont 	$104,040 	Analysts
+Virginia 	$122,680 	Analysts
+Washington 	$105,680 	Analysts
+West Virginia 	$75,510 	Analysts
+Wisconsin	$78,880 	Analysts
+Alabama 	$76,870 	Statisticians
+Alaska 	$90,500 	Statisticians
+Arizona 	$102,090 	Statisticians
+California 	$130,530 	Statisticians
+Colorado 	$105,110 	Statisticians
+Connecticut	$100,840 	Statisticians
+Delaware 	$124,240 	Statisticians
+District of Columbia 	$132,570 	Statisticians
+Florida	$116,860 	Statisticians
+Georgia	$114,320 	Statisticians
+Hawaii 	$84,230 	Statisticians
+Illinois 	$121,380 	Statisticians
+Indiana 	$110,060 	Statisticians
+Iowa 	$90,270 	Statisticians
+Kansas 	$101,930 	Statisticians
+Kentucky	$107,160 	Statisticians
+Louisiana 	$78,310 	Statisticians
+Maine 	$85,590 	Statisticians
+Maryland 	$127,740 	Statisticians
+Massachusetts 	$108,850 	Statisticians
+Michigan	$104,340 	Statisticians
+Minnesota	$90,810 	Statisticians
+Mississippi 	$65,930 	Statisticians
+Missouri 	$76,080 	Statisticians
+Montana	$86,570 	Statisticians
+Nebraska 	$86,080 	Statisticians
+Nevada 	$85,630 	Statisticians
+New Hampshire 	$123,280 	Statisticians
+New Jersey 	$114,700 	Statisticians
+New Mexico	$76,930 	Statisticians
+New York 	$147,470 	Statisticians
+North Carolina 	$128,280 	Statisticians
+North Dakota	$81,580 	Statisticians
+Ohio 	$91,090 	Statisticians
+Oklahoma 	$94,520 	Statisticians
+Oregon 	$94,920 	Statisticians
+Pennsylvania	$99,020 	Statisticians
+Puerto Rico	$49,310 	Statisticians
+Rhode Island	$91,650 	Statisticians
+South Carolina 	$70,160 	Statisticians
+Tennessee	$92,460 	Statisticians
+Texas	$110,910 	Statisticians
+Utah 	$96,070 	Statisticians
+Vermont 	$79,450 	Statisticians
+Virginia 	$111,760 	Statisticians
+Washington 	$112,000 	Statisticians
+West Virginia 	$84,450 	Statisticians
+Wisconsin	$96,200 	Statisticians
+Alabama 	$133,320	Actuaries
+Arizona 	$124,760	Actuaries
+California 	$139,640	Actuaries
+Colorado 	$136,180	Actuaries
+Connecticut	$152,210	Actuaries
+District of Columbia 	$151,770	Actuaries
+Florida	$129,770	Actuaries
+Hawaii 	$111,660	Actuaries
+Idaho	$115,690	Actuaries
+Illinois 	$126,280	Actuaries
+Indiana 	$102,960	Actuaries
+Iowa 	$128,070	Actuaries
+Kansas 	$135,270	Actuaries
+Kentucky	$130,610	Actuaries
+Louisiana 	$103,900	Actuaries
+Maine 	$125,440	Actuaries
+Maryland 	$137,230	Actuaries
+Massachusetts 	$130,780	Actuaries
+Michigan	$112,140	Actuaries
+Minnesota	$123,660	Actuaries
+Mississippi 	$123,500	Actuaries
+Missouri 	$130,400	Actuaries
+Nebraska 	$108,150	Actuaries
+Nevada 	$131,460	Actuaries
+New Jersey 	$144,990	Actuaries
+New York 	$152,470	Actuaries
+North Carolina 	$137,810	Actuaries
+Ohio 	$121,910	Actuaries
+Oklahoma 	$107,740	Actuaries
+Oregon 	$133,090	Actuaries
+Pennsylvania	$131,200	Actuaries
+Puerto Rico	$68,040	Actuaries
+Rhode Island	$120,130	Actuaries
+South Carolina 	$115,080	Actuaries
+South Dakota 	$8	Actuaries
+Tennessee	$140,000	Actuaries
+Texas	$113,490	Actuaries
+Utah 	$121,520	Actuaries
+Virginia 	$145,430	Actuaries
+Washington 	$147,630	Actuaries
+Wisconsin	$129,960	Actuaries
