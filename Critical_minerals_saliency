@@ -1,0 +1,32 @@
+Source,Year,Critical_mineral,Primary_prod,Secondary_prod,Apparent_Consuption,Net_Import_Reliance,Primary_import_source,Leading_source_country,Leading_country_prod,World_total_prod,World_prod_notes,Leading_source_precent_world
+MCS2024,2023_estimated,Aluminum,W,0,1800000,>75,Jamaica,Australia,98000000,400000000,Excludes U.S. production.,25
+MCS2024,2023_estimated,Antimony,0,4000,22000,82,China,China,40000,83000,,48
+MCS2024,2023_estimated,Arsenic,0,NA,6400,100,China,Peru,27000,60000,Arsenic trioxide.,45
+MCS2024,2023_estimated,Barite,W,0,W,>75,India,India,2700000,8500000,Excludes U.S. production.,32
+MCS2024,2023_estimated,Beryllium,190,NA,150,NA,Kazakhstan,United States,190,330,,58
+MCS2024,2023_estimated,Bismuth,0,80,1400,94,China,China,16000,20000,,80
+MCS2024,2023_estimated,Chromium,0,100000,380000,74,South Africa,South Africa,18000000,41000000,,44
+MCS2024,2023_estimated,Cobalt,500,2100,6400,67,Norway,Congo (Kinshasa),170000,230000,,74
+MCS2024,2023_estimated,Fluorspar,NA,0,370000,100,Mexico,China,5700000,8800000,,65
+MCS2024,2023_estimated,Gallium,0,0,19,100,Japan,China,600,610,,98
+MCS2024,2023_estimated,Germanium,0,NA,NA,>50,Belgium,China,NA,NA,,NA
+MCS2024,2023_estimated,Graphite,0,0,76000,100,China,China,1230000,1600000,,77
+MCS2024,2023_estimated,Indium,0,0,300,100,Republic of Korea,China,650,990,,66
+MCS2024,2023_estimated,Lithium,W,NA,W,>25,Argentina,Australia,86000,180000,Excludes U.S. production.,48
+MCS2024,2023_estimated,Magnesium,W,100000,55000,>50,Canada,China,830000,940000,Excludes U.S. production.,88
+MCS2024,2023_estimated,Manganese,0,0,690000,100,Gabon,South Africa,7200000,20000000,,36
+MCS2024,2023_estimated,Nickel,17000,W,190000,57,Canada,Indonesia,1800000,3600000,,50
+MCS2024,2023_estimated,Niobium,0,NA,8400,100,Brazil,Brazil,75000,83000,,90
+MCS2024,2023_estimated,Palladium,10,42,82,37,Russia,Russia,92,210,,44
+MCS2024,2023_estimated,Platinum,3,9,70,83,South Africa,South Africa,120,180,,67
+MCS2024,2023_estimated,Rare earths (compounds and metals),250,NA,8800,>95,China,China,240000,350000,,69
+MCS2024,2023_estimated,Scandium,0,0,NA,100,Japan,China,NA,NA,,NA
+MCS2024,2023_estimated,Tantalum,0,NA,370,100,China,Congo (Kinshasa),980,2400,,41
+MCS2024,2023_estimated,Tellurium,W,0,W,>25,Canada,China,430,640,Excludes U.S. production.,67
+MCS2024,2023_estimated,Tin,0,16900,39000,74,Peru,China,68000,290000,,23
+MCS2024,2023_estimated,Titanium,W,W,42000,>95,Japan,China,220000,330000,Excludes U.S. production.,67
+MCS2024,2023_estimated,Tungsten,0,W,W,>50,China,China,63000,78000,,81
+MCS2024,2023_estimated,Vanadium,0,5700,14000,58,Canada,China,68000,100000,,68
+MCS2024,2023_estimated,Yttrium,NA,0,200,100,China,China,NA,NA,,NA
+MCS2024,2023_estimated,Zinc,220000,NA,970000,77,Canada,NA,NA,NA,,NA
+MCS2024,2023_estimated,Zirconium,"<100,000",NA,"<100,000",<25,South Africa,Australia,500000,1600000,,31
