@@ -17,14 +17,14 @@ China,Competitor
 Russia,Competitor
 Belarus,Competitor
 India,Neutral
-Mexico,Neutral
-Brazil,Neutral
+Mexico,Ally
+Brazil,Ally
 South Africa,Neutral
-Kazakhstan,Neutral
-Morocco,Neutral
-Malaysia,Neutral
+Kazakhstan,Ally
+Morocco,Ally
+Malaysia,Ally
 Vietnam,Neutral
-Peru,Neutral
+Peru,Ally
 Jamaica,Neutral
 Indonesia,Neutral
 Bolivia,Neutral
@@ -35,4 +35,7 @@ Netherlands,Ally
 Finland,Ally
 Italy,Ally
 Ireland,Ally
+Turkey,Ally
+Saudi Arabia,Ally
+Georgia,Ally
 Unknown,Unknown
